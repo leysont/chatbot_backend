@@ -1,0 +1,8 @@
+openapi: "3.1.0"
+info:
+  title: "chatbot_backend API"
+  description: "chatbot_backend API"
+  version: "1.0.0"
+servers:
+- url: "https://chatbot_backend"
+paths: {}
