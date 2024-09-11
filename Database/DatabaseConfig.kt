@@ -6,7 +6,7 @@ object DatabaseConfig {
             url = "jdbc:mysql://localhost:3306/deine_datenbank",
             driver = "com.mysql.cj.jdbc.Driver",
             user = "root",
-            password = "dein_passwort"
+            password = "password"
         )
     }
 }
