@@ -1,26 +1,26 @@
 package team.team_trashcan
-//import io.ktor.application.*
-//import io.ktor.features.ContentNegotiation
-//import io.ktor.gson.gson
-//import io.ktor.response.*
-//import io.ktor.request.*
-//import io.ktor.routing.*
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import io.github.smiley4.ktorswaggerui.dsl.route
+import io.ktor.http.ContentDisposition.Companion.File
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import team.team_trashcan.plugins.*
+import io.ktor.server.request.*
+import io.ktor.server.routing.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import team.team_trashcan.plugins.configureDatabases
+import team.team_trashcan.plugins.configureHTTP
+import team.team_trashcan.plugins.configureRouting
+import team.team_trashcan.plugins.configureSerialization
+import java.io.File
 
 
 fun main() {
-    //DatabaseConfig.connect()
-
-
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
+    val filePath = "data.json" // Pfad zu deiner JSON-Datei
+    val file = File(filePath)
+    val jsonString = file.readText()
 }
 
 fun Application.module() {
@@ -28,4 +28,31 @@ fun Application.module() {
     configureDatabases()
     configureHTTP()
     configureRouting()
+
+    routing {
+        route("api") {
+            route("/tickets/") {
+                post {
+                    // neues Ticket erstellen
+                    val text = call.receiveText()
+
+                }
+                get {
+                    // alle Tickets laden
+                }
+                delete {
+                    // alle Tickets löschen
+                }
+                route("{id}") {
+                    get {
+                        // ein Ticket laden
+                    }
+                    delete {
+                        // ein Ticket löschen
+                    }
+                }
+
+            }
+        }
+    }
 }

@@ -1,15 +1,17 @@
 package team.team_trashcan
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table.Dual.varchar
 import org.jetbrains.exposed.sql.booleanParam
 import team.team_trashcan.plugins.UserService.Users.integer
 
+@Serializable
 class Ticket {
-    val Name = varchar("Name", 255);
-    val Id = integer ("ID");
-    val Kunde = integer ("KundenID");
-    val Text = varchar("Text", 1000);
-    val Mitarbeiter = integer ("MitarbeiterID");
-    val Express = booleanParam(false);
-    val Servicelevel = integer ("Servicelevel");
+    val Name: String? = null
+    val Id: Int? = null
+    val Kunde: Kunde? = null
+    val Text: String? = null
+    val Mitarbeiter: Mitarbeiter? = null
+    val Express = false
+    val Servicelevel = Kunde?.Servicelevel
 }

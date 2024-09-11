@@ -1,14 +1,13 @@
 package team.team_trashcan
 
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table.Dual.integer
 import org.jetbrains.exposed.sql.Table.Dual.varchar
 
-
+@Serializable
 class Kunde {
-    val Id = integer("IdKunde")
-    val Name = varchar("Name", 32);
-    val Servicelevel = integer("Servicelevel");
-    val Notizen = varchar("Notizen", 1000);
-
-    //override val primaryKey = PrimaryKey(Id)
+    val Id : Int? = null
+    val Name : String? = null
+    val Servicelevel = 1
+    val Notizen : String? = null
 }
