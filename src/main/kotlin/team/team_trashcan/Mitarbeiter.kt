@@ -1,12 +1,13 @@
 package team.team_trashcan
 
-import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.Table.Dual.varchar
+import org.jetbrains.exposed.sql.Table
 
-@Serializable
-class Mitarbeiter {
-    val Id : Int? = null
-    val Vorname: String? = null
-    val Nachname: String? = null
-    val Themenschwerpunkte: String? = null
+
+class Employee : Table(){
+    val Id = integer("Id").autoIncrement()
+    val Vorname = varchar("Firstname", length = 50)
+    val Nachname = varchar("Lastname", length = 50)
+    val Themenschwerpunkte= varchar("Topics", length = 200)
+
+    override val primaryKey = PrimaryKey(Id)
 }

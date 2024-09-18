@@ -33,7 +33,6 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("com.h2database:h2:$h2_version")
     implementation("io.ktor:ktor-server-webjars-jvm")
-    implementation("org.webjars:jquery:3.2.1")
     implementation("io.github.smiley4:ktor-swagger-ui:2.9.0")
     implementation("io.ktor:ktor-server-openapi")
     implementation("io.ktor:ktor-server-netty-jvm")
@@ -45,5 +44,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-dao:0.37.3")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
     implementation("mysql:mysql-connector-java:8.0.26")
-
+    dependencies {
+        implementation("org.mariadb.jdbc:mariadb-java-client:2.7.3")
+    }
 }

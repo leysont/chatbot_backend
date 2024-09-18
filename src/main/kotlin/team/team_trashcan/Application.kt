@@ -18,9 +18,24 @@ import java.io.File
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
-    val filePath = "data.json" // Pfad zu deiner JSON-Datei
-    val file = File(filePath)
-    val jsonString = file.readText()
+
+//    // Kundendaten aus der Json lesen
+//    val filePath = "kunde.json" // Pfad zu deiner JSON-Datei
+//    val jsonString = File(filePath).readText()
+//    val user = Json.decodeFromString<Kunde>(jsonString)
+//    println(user)
+//
+//    // Tickets aus der Json lesen
+//    val filePathTickets = "ticket.json" // Pfad zu deiner JSON-Datei
+//    val jsonStringTicket = File(filePath).readText()
+//    val ticket = Json.decodeFromString<Ticket>(jsonString)
+//    println(ticket)
+//
+//    // Mitarbeiter aus der Json lesen
+//    val filePathMitarbeiter = "mitarbeiter.json" // Pfad zu deiner JSON-Datei
+//    val jsonStringMitarbeiter = File(filePath).readText()
+//    val mitarbeiter = Json.decodeFromString<Ticket>(jsonString)
+//    println(mitarbeiter)
 }
 
 fun Application.module() {
