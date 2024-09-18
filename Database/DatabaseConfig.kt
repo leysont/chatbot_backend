@@ -16,8 +16,8 @@ fun connectToDatabase() {
 
 fun queryDatabase() {
     transaction {
-        Users.selectAll().forEach {
-            println("${it[Users.id]}: ${it[Users.name]}, ${it[Users.age]}")
+        Customer.selectAll().forEach {
+            println("${it[Customer.Id]}: ${it[Customer.Name]}, ${it[Customer.Servicelevel]}")
         }
     }
 }

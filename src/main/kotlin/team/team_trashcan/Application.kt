@@ -12,30 +12,24 @@ import team.team_trashcan.plugins.configureDatabases
 import team.team_trashcan.plugins.configureHTTP
 import team.team_trashcan.plugins.configureRouting
 import team.team_trashcan.plugins.configureSerialization
-import java.io.File
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
 
-//    // Kundendaten aus der Json lesen
-//    val filePath = "kunde.json" // Pfad zu deiner JSON-Datei
-//    val jsonString = File(filePath).readText()
-//    val user = Json.decodeFromString<Kunde>(jsonString)
-//    println(user)
-//
-//    // Tickets aus der Json lesen
-//    val filePathTickets = "ticket.json" // Pfad zu deiner JSON-Datei
-//    val jsonStringTicket = File(filePath).readText()
-//    val ticket = Json.decodeFromString<Ticket>(jsonString)
-//    println(ticket)
-//
-//    // Mitarbeiter aus der Json lesen
-//    val filePathMitarbeiter = "mitarbeiter.json" // Pfad zu deiner JSON-Datei
-//    val jsonStringMitarbeiter = File(filePath).readText()
-//    val mitarbeiter = Json.decodeFromString<Ticket>(jsonString)
-//    println(mitarbeiter)
+    Database.connect("jdbc:mariadb://0.0.0.0:58304/",
+        driver = "org.mariadb.jdbc.Driver",
+        user = "root",
+        password = "chatbot")
+
+    // Create the table
+    transaction {
+        SchemaUtils.create(Customer())
+    }
 }
 
 fun Application.module() {
