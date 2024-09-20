@@ -5,9 +5,9 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.request.*
+import io.ktor.server.response.respond
 import io.ktor.server.routing.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import team.team_trashcan.chatbot.handleFrontendCall
 import team.team_trashcan.plugins.configureDatabases
 import team.team_trashcan.plugins.configureHTTP
 import team.team_trashcan.plugins.configureRouting
@@ -30,6 +30,15 @@ fun Application.module() {
     configureRouting()
 
     routing {
+
+        post("chatbot") {
+            call.respond(
+                handleFrontendCall(
+                    call.receiveText()
+                )
+            )
+        }
+
         route("api") {
             route("/tickets/") {
                 post {
