@@ -1,6 +1,5 @@
 package team.team_trashcan
 import io.github.smiley4.ktorswaggerui.dsl.route
-import io.ktor.http.ContentDisposition.Companion.File
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*

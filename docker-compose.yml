@@ -1,0 +1,24 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  db:
+    image: mariadb
+    container_name: chatbot_mariadb
+#    restart: always
+    environment:
+      # Root password
+      MARIADB_ROOT_PASSWORD: password
+      # Optional: Name of the database to create
+      MARIADB_DATABASE: chatbot_db
+      # Optional: Non-root user
+#      MARIADB_USER: user
+      # Optional: Password for non-root user
+#      MARIADB_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - volume:/var/lib/mysql
+
+volumes:
+    volume:
