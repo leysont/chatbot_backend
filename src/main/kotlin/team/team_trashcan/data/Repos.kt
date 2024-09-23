@@ -55,10 +55,10 @@ object Repos {
         override suspend fun add(entity: Ticket) = suspendTransaction {
             TicketDAO.new {
                 title = entity.title
-                customer = CustomerDAO.findById(entity.customer.id)
+                customer = CustomerDAO.findById(entity.customer.id!!)
                     ?: throw NotFoundException("No customer with id ${entity.customer.id}")
                 issueDescription = entity.issueDescription
-                employee = EmployeeDAO.findById(entity.employee.id)
+                employee = EmployeeDAO.findById(entity.employee.id!!)
                     ?: throw NotFoundException("No employee with id ${entity.employee.id}")
                 express = entity.express
                 serviceLevel = entity.serviceLevel

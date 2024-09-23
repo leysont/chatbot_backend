@@ -16,7 +16,7 @@ import team.team_trashcan.data.ServiceLevel
  */
 @Serializable
 data class Ticket(
-    val id: Int,
+    val id: Int? = null,
     val title: String,
     val customer: Customer,
     val issueDescription: String,

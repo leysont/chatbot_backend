@@ -26,10 +26,10 @@ fun Application.configureSerialization() {
                 call.respond(list)
             }
 
-            get("/{customerId:Int}") {
+            get("/{customerId}") {
                 val id = call.parameters["customerId"]?.toIntOrNull()
                 if (id == null) {
-                    call.respond(HttpStatusCode.BadRequest)
+                    call.respond(HttpStatusCode.BadRequest, "customerId has to be an integer")
                     return@get
                 }
 

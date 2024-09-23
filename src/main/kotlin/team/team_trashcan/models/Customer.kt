@@ -13,7 +13,7 @@ import team.team_trashcan.data.ServiceLevel
  */
 @Serializable
 data class Customer (
-    val id: Int,
+    val id: Int? = null,
     val name: String,
     val serviceLevel: ServiceLevel = ServiceLevel.Bronze,
     val notes: String = "",
