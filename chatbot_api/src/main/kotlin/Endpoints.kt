@@ -11,7 +11,7 @@ import models.Customer
 import models.Employee
 import models.Ticket
 
-fun Routing.configureEndpoints() {
+fun Routing.configureApiEndpoints() {
     route("/customers") {
         get {
             val list = Repos.Customers.getAll()

@@ -25,11 +25,13 @@ dependencies {
     implementation("io.ktor:ktor-server-openapi")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-webjars-jvm")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
+
 
     implementation("io.github.smiley4:ktor-swagger-ui:2.9.0")
 
     testImplementation(kotlin("test"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 }
 
 tasks.test {

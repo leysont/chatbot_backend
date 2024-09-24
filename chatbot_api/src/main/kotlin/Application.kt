@@ -1,15 +1,16 @@
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
-import plugins.configureDatabases
-import plugins.configureRouting
-import plugins.configureSerialization
+import plugins.configureDatabase
+import plugins.configure
 import java.io.File
 
+const val port = 55555
 
 fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
+    embeddedServer(Netty, port = port, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
     val filePath = "data.json" // Pfad zu deiner JSON-Datei
     val file = File(filePath)
@@ -17,13 +18,16 @@ fun main() {
 }
 
 fun Application.module() {
-    configureSerialization()
-    configureDatabases()
-//    configureHTTP()
-    configureRouting()
+    configure(port)
 
+    configureDatabase()
+
+    // Configure API endpoints
     routing {
-        configureEndpoints()
+        get("/") {
+            call.respondText("hello yes this is api")
+        }
+        configureApiEndpoints()
     }
 
 }
