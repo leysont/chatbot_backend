@@ -8,7 +8,7 @@ import io.ktor.server.routing.post
 
 fun Routing.configureEndpoints() {
 
-    // send message. take message, user ID
+    // send message. params: message, channel ID
     post("/message") {
         val message = call.receive<String>()
 
@@ -19,7 +19,10 @@ fun Routing.configureEndpoints() {
         call.respond(response)
     }
 
-    // end the chat
+    // start chat params: user ID, channel ID (issue ID)
+    post("/start") { }
+
+    // end the chat: channel ID
     post("/cancel") { }
 
 }

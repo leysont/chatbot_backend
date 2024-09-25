@@ -12,7 +12,7 @@ services:
       MARIADB_USER: chatbot
       MARIADB_PASSWORD: chatbot
     ports:
-      - "3306:3306"
+      - "55555:3306"
     volumes:
       - volume:/var/lib/mysql
 
