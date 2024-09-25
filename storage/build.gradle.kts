@@ -1,3 +1,5 @@
+import io.ktor.plugin.features.*
+
 val kotlinVersion: String by project
 val logbackVersion: String by project
 val exposedVersion: String by project
@@ -5,7 +7,7 @@ val exposedVersion: String by project
 plugins {
     id("io.ktor.plugin") version "2.3.12"
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.20"
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm")
     application
 }
 
@@ -13,10 +15,26 @@ group = "team.trashcan"
 version = "0.0.1"
 
 application {
-    mainClass.set("team.trashcan.ApplicationKt")
+    mainClass.set("ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_17)
+        localImageName.set("adira_core.storage")
+        portMappings.set(
+            listOf(
+                DockerPortMapping(
+                    outsideDocker = 8081,
+                    insideDocker = 8081,
+                    protocol = DockerPortMappingProtocol.TCP
+                )
+            )
+        )
+    }
 }
 
 repositories {
@@ -24,7 +42,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    testImplementation(kotlin("test"))
 
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -45,5 +63,11 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+}
 
+tasks.test {
+    useJUnitPlatform()
+}
+kotlin {
+    jvmToolchain(11)
 }

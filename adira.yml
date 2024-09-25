@@ -1,0 +1,23 @@
+version: '3.8'
+
+name: adira_core
+
+services:
+  storage:
+    extends:
+      service: storage
+      file: storage/adira.storage.yml
+
+  storage.database:
+    extends:
+      service: storage.database
+      file: storage/adira.storage.yml
+
+  dialog:
+    extends:
+      service: dialog
+      file: dialog/adira.dialog.yml
+
+
+volumes:
+    volume:

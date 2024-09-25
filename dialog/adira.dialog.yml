@@ -1,0 +1,11 @@
+version: '3.8'
+
+name: storage
+
+services:
+  dialog:
+    image: adira_core.dialog
+    container_name: dialog
+    ports:
+      - "8080:8080"
+#    restart: always

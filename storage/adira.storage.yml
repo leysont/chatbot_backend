@@ -1,0 +1,30 @@
+version: '3.8'
+
+name: storage
+
+services:
+  storage.database:
+    image: mariadb
+    container_name: storage.database
+#    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: support_data
+      MARIADB_USER: adira
+      MARIADB_PASSWORD: adiras_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - volume:/var/lib/mysql
+
+  storage:
+    image: adira_core.storage
+    container_name: storage
+    ports:
+      - "8081:8081"
+    depends_on:
+      - storage.database
+#    restart: always
+
+volumes:
+    volume:
