@@ -42,6 +42,8 @@ class Bot {
      * @return An instance of Info if relevant information is found in the message, null otherwise.
      */
     fun extractInfo(message: String): Info? {
+        // TODO: replace with command for the prompt as defined in `bot_config.yaml`: "/DetectInfo"
+        // TODO: make sure the contents of bot_config.yaml are provided at the start of every chat to the bot
         return Json.Default.decodeFromString(
             model.generate(
                 Prompt(
