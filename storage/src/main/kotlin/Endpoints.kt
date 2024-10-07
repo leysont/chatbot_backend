@@ -152,4 +152,24 @@ fun Routing.configureApiEndpoints() {
             }
         }
     }
+
+    // neuer Endpoint für die supporterRole - muss noch getestet werden, ob die so funktioniert
+    route("/supporter") {
+        get {
+            val list = Repos.Servers.getAll()
+            call.respond(list)
+        }
+        get("/role") {
+            val role = call.parameters["supporterRoleID"]?.toIntOrNull()
+            if (role == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            // Repos.Tickets[id] is the same as Repos.Tickets.get(id)
+            val entity = Repos.Tickets[role]
+
+            call.respond(entity ?: HttpStatusCode.NotFound)
+        }
+    }
 }
