@@ -3,6 +3,7 @@ package data
 import io.ktor.server.plugins.NotFoundException
 import models.Customer
 import models.Employee
+import models.Server
 import models.Ticket
 
 /**
@@ -57,7 +58,8 @@ object Repos {
                 title = entity.title
                 customer = CustomerDAO.findById(entity.customer.id!!)
                     ?: throw NotFoundException("No customer with id ${entity.customer.id}")
-                issueDescription = entity.issueDescription
+                issueExpectation = entity.issueExpectation
+                issueExperience = entity.issueExperience
                 employee = EmployeeDAO.findById(entity.employee.id!!)
                     ?: throw NotFoundException("No employee with id ${entity.employee.id}")
                 express = entity.express
@@ -95,6 +97,26 @@ object Repos {
 
         override suspend fun delete(id: Int): Boolean = suspendTransaction {
             EmployeeDAO.findById(id)?.delete() != null
+        }
+    }
+
+    object Servers : Repository<Server> {
+        override suspend fun add(entity: Server): Server {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun getAll(): List<Server> = suspendTransaction {
+            ServerDAO.all().map { it.toModel() }
+        }
+
+        override suspend fun get(id: Int): Server? = suspendTransaction {
+            ServerDAO
+                .findById(id)
+                ?.toModel()
+        }
+
+        override suspend fun delete(id: Int): Boolean {
+            TODO("Not yet implemented")
         }
     }
 }

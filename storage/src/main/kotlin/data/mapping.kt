@@ -3,6 +3,7 @@ package data
 import kotlinx.coroutines.Dispatchers
 import models.Customer
 import models.Employee
+import models.Server
 import models.Ticket
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -35,9 +36,16 @@ object TicketTable : IntIdTable() {
     val title = varchar("name", 100)
     val customerId = reference("customer_id", CustomerTable)
     val issueDescription = text("text")
+    val issueExperience = text("text")
+    val issueExpectation = text("text")
     val employeeId = reference("employee_id", EmployeeTable)
     val express = bool("express").default(false)
     val serviceLevel = enumerationByName("service_level", 10, ServiceLevel::class)
+}
+
+object ServerTable : IntIdTable() {
+    val severId = integer("serverID").default(0)
+    val supporterRoleId = integer("supporter_role_id").default(0)
 }
 
 class CustomerDAO(id: EntityID<Int>) : IntEntity(id) {
@@ -76,6 +84,8 @@ class TicketDAO(id: EntityID<Int>) : IntEntity(id) {
     var title by TicketTable.title
     var customer by CustomerDAO referencedOn TicketTable.customerId
     var issueDescription by TicketTable.issueDescription
+    var issueExperience by TicketTable.issueExperience
+    var issueExpectation by TicketTable.issueExpectation
     var employee by EmployeeDAO referencedOn TicketTable.employeeId
     var express by TicketTable.express
     var serviceLevel by TicketTable.serviceLevel
@@ -84,9 +94,23 @@ class TicketDAO(id: EntityID<Int>) : IntEntity(id) {
         id.value,
         title,
         customer.toModel(),
-        issueDescription,
+        issueExperience,
+        issueExpectation,
         employee.toModel(),
         express,
+    )
+}
+
+
+class ServerDAO(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<ServerDAO>(ServerTable)
+
+    var serverId  by ServerTable.severId
+
+
+    fun toModel() = Server(
+        id.value,
+        serverId,
     )
 }
 
