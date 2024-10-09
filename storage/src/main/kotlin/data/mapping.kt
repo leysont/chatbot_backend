@@ -35,8 +35,8 @@ object EmployeeTable : IntIdTable() {
 object TicketTable : IntIdTable() {
     val title = varchar("name", 100)
     val customerId = reference("customer_id", CustomerTable)
-    val issueExperience = text("text")
-    val issueExpectation = text("text")
+    val issueExperience = text("issue_experience")
+    val issueExpectation = text("issue_expectation")
     val employeeId = reference("employee_id", EmployeeTable)
     val express = bool("express").default(false)
     val serviceLevel = enumerationByName("service_level", 10, ServiceLevel::class)
