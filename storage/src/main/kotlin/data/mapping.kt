@@ -35,7 +35,6 @@ object EmployeeTable : IntIdTable() {
 object TicketTable : IntIdTable() {
     val title = varchar("name", 100)
     val customerId = reference("customer_id", CustomerTable)
-    val issueDescription = text("text")
     val issueExperience = text("text")
     val issueExpectation = text("text")
     val employeeId = reference("employee_id", EmployeeTable)
@@ -83,7 +82,6 @@ class TicketDAO(id: EntityID<Int>) : IntEntity(id) {
 
     var title by TicketTable.title
     var customer by CustomerDAO referencedOn TicketTable.customerId
-    var issueDescription by TicketTable.issueDescription
     var issueExperience by TicketTable.issueExperience
     var issueExpectation by TicketTable.issueExpectation
     var employee by EmployeeDAO referencedOn TicketTable.employeeId
