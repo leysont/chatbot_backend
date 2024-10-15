@@ -17,7 +17,3 @@ services:
     extends:
       service: dialog
       file: dialog/adira.dialog.yml
-
-
-volumes:
-    volume:
