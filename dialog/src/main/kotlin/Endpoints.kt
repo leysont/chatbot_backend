@@ -137,7 +137,7 @@ private suspend fun postMessage(sessionId: String, message: String): HttpSimpleR
 
     session.history.add(UserMessage(message))
 
-    val response = session.processMessage(message)
+    val response = session.processMessage()
 
     data class ResponseSummary(val message: String, val body: Ticket)
 

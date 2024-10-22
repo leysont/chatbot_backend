@@ -1,7 +1,5 @@
 package data
 
-import models_dialog.Customer
-
 /**
  * A generic repository interface for managing a collection of objects.
  *

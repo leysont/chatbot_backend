@@ -12,15 +12,6 @@ object Prompts {
     }
 
     @Serializable
-    data class CustomPrompt(
-        val outputPrompt: String,
-        val outputFormat: String,
-        val userMessage: String?,
-    ) : IPrompt {
-        override fun execute(): String = model.generateTo<String>(this)
-    }
-
-    @Serializable
     abstract class DefaultCommandPrompt(
     ) : IPrompt {
         abstract val promptCommand: String

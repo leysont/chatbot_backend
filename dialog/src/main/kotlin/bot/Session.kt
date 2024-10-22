@@ -87,7 +87,7 @@ class Session(
 
     // TODO: give the yaml to the ai as the first system message
 
-    suspend fun processMessage(userMessage: String): AssistantMessage? = try {
+    suspend fun processMessage(): AssistantMessage? = try {
         when (history.lastAssistantMessage()?.intent) {
 
             // Last message was a summary, check response; if successful send solution, else gather info
