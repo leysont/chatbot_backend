@@ -40,20 +40,28 @@ repositories {
 }
 
 dependencies {
+    // Ktor server
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-openapi")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-server-webjars-jvm")
+
+    // Ktor client
+    implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-cio")
+
+    // Generic stuff
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-
-
     implementation("io.github.smiley4:ktor-swagger-ui:2.9.0")
 
+    // Project-specific
+    implementation("com.aallam.openai:openai-client:3.8.2")
+    // implementation(project(":storage"))
+
     testImplementation(kotlin("test"))
-//    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 }
 
 tasks.test {

@@ -1,8 +1,13 @@
 package bot
 
 import bot.AssistantMessage.Intent
+import bot.Issue.Keys.*
+import data.Repos
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import models_dialog.Ticket
 
+@Serializable
 abstract class Message(
     open val content: String,
 )
@@ -14,12 +19,14 @@ data class UserMessage(
 data class AssistantMessage(
     override val content: String,
     val intent: Intent,
+    val body: Ticket? = null,
 ) : Message(content) {
     enum class Intent {
         Summary, Solution, GatherInfo, EndAndSolved, EndAndSendTicket,
     }
 }
 
+@Serializable
 class History {
     /**
      * Maintains a history of interactions within a user session.
@@ -38,8 +45,8 @@ class History {
 
 object SessionManager {
 
-    // TODO: Move to database for persistence
-    val sessions = mutableMapOf<String, Session>()
+    // TODO: Replace session map with Repos.Tickets.get(id) and filter open. New error if it's closed.
+    private val sessions = mutableMapOf<String, Session>()
 
     fun get(id: String): Session? {
         return sessions[id]
@@ -50,58 +57,83 @@ object SessionManager {
     }
 
     fun create(userId: String, sessionId: String): Session {
-        return Session(userId).also {
+        return Session(userId, sessionId).also {
             sessions[sessionId] = it
         }
     }
 }
 
+@Serializable
+data class Context(
+    var history: History,
+    var issue: Issue,
+)
+
 class Session(
-    val userId: String,
+    sessionId: String,
+    userId: String,
 ) {
-    private val issue = Issue()
+
+    private val issue = Issue().apply {
+        this[TicketId.name] = sessionId
+        this[CustomerId.name] = userId
+        this[CustomerName.name] = runBlocking { userId.toIntOrNull()?.let { Repos.Customers.get(it) } }?.name
+    }
 
     val history = History()
 
-    fun processMessage(userMessage: String): AssistantMessage? =
+    private val context: Context
+        get() = Context(history, issue)
+
+    // TODO: give the yaml to the ai as the first system message
+
+    suspend fun processMessage(userMessage: String): AssistantMessage? = try {
         when (history.lastAssistantMessage()?.intent) {
 
             // Last message was a summary, check response; if successful send solution, else gather info
             Intent.Summary -> {
-                val summaryResult = Prompts.extractBoolean(
-                    message = userMessage,
-                    prompt = "Consider the userMessage an answer to a support ticket summary with the question: 'Does this summary accurately describe your issue?'. If the userMessage represents a positive response to this question, return `true`, otherwise return `false` If it isn't entirely clear, return `null`/ (Don't include the backticks)."
-                )
-                if (summaryResult == true) {
-                    val solutions = Prompts.generatePotentialSolutions()
+                when (Prompts.ExtractBooleanNullable(context).execute()) {
+                    true -> {
+                        // Ticket is complete and accurate. Generate solutions.
+                        AssistantMessage(
+                            Prompts.GeneratePotentialSolutions(context).execute(),
+                            Intent.Solution
+                        )
+                    }
 
-                    AssistantMessage(
-                        solutions,
-                        Intent.Solution
-                    )
-                } else {
-                    AssistantMessage(
-                        "Summary not accurate? Please provide more information.",
-                        Intent.GatherInfo
-                    )
+                    false -> {
+                        // Ticket is incomplete. Continue gather information
+                        AssistantMessage(
+                            Prompts.GatherInfo(context).execute(),
+                            Intent.GatherInfo
+                        )
+                    }
+
+                    null -> {
+                        // User message is not clear on whether the ticket is complete. Continue gather information
+                        AssistantMessage(
+                            Prompts.GatherInfo(context).execute(),
+                            Intent.GatherInfo
+                        )
+                    }
                 }
             }
 
             // Last message was a solution, check response; if successful end chat, else send ticket
             Intent.Solution -> {
-                val solutionResult = Prompts.extractBoolean(
-                    message = userMessage,
-                    prompt = "Consider the userMessage an answer to a potential tech support solution with the question: 'Has this solution worked?'. If the userMessage represents a positive response to this question, return `true`, otherwise return `false` If it isn't entirely clear or the user hasn't tried the solution, return `null`/ (Don't include the backticks)."
-                )
+                val solutionResult = Prompts.ExtractBooleanNullable(context).execute()
                 if (solutionResult == true) {
+                    //TODO: Replace solved issue message with prompt
                     AssistantMessage(
                         "Issue resolved successfully! 🙌 Chat will now end. Thank you for using the ticket system.👋",
                         Intent.EndAndSolved
                     )
                 } else {
+                    //TODO: Replace sent ticket message with prompt
                     AssistantMessage(
-                        "Issue could not be resolved, ticket is being sent.",
-                        Intent.EndAndSendTicket
+                        content = "Issue could not be resolved, ticket is being sent.",
+                        body = issue.toTicket(context),
+                        intent = Intent.EndAndSendTicket,
                     )
                 }
             }
@@ -109,25 +141,37 @@ class Session(
             // Either no previous message or it was GatherInfo; extract info and keep asking.
             // Generate summary if issue is complete.
             else -> {
-                //TODO: set guards to avoid off-topic chat
-                val info = Prompts.extractInfo(userMessage)
-                if (info != null) {
-                    issue[info.field] = info.value
+                // TODO Advanced: set guards to avoid off-topic chat
+
+                Prompts.ExtractInfo(context).execute().let {
+                    issue[it.field] = it.value
                 }
 
-                val response = if (issue.isComplete()) {
-                    Prompts.generateTicketSummary(issue)
-                } else {
-                    // TODO: set a guard to avoid getting stuck in the loop without resolving the issue
-                    Prompts.gatherInfo("Try to determine missing info to complete the ticket")
-                }
+                when (issue.isComplete()) {
+                    true -> {
+                        val ticket = issue.toTicket(context)
+                        // TODO: Handle ticket being null (only if employee couldn't be assigned)
+                        AssistantMessage(
+                            Prompts.RequestTicketConfirmation(context).execute(),
+                            Intent.Summary,
+                            ticket,
+                        )
+                    }
 
-                AssistantMessage(
-                    response,
-                    Intent.GatherInfo
-                )
+                    false -> {
+                        // TODO Advanced: set a guard to avoid getting stuck in the loop without resolving the issue
+                        AssistantMessage(
+                            Prompts.GatherInfo(context).execute(),
+                            Intent.GatherInfo,
+                        )
+                    }
+                }
             }
         }
+
+    } catch (ex: Exception) { // TODO Replace null return with error object cast to AssistantMessage or smth
+        null
+    }
 }
 
 @Serializable

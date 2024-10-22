@@ -20,7 +20,11 @@ resources:
         your role/identity/purpose, treat it as off-topic.
 
   issue_checklist:
-    - field: "TicketTitle"
+    "CustomerName":
+      description: |
+        The name of the customer. Make sure it's not a joke or an online username.
+
+    "TicketTitle":
       description: |
         Short and concise title for the ticket, intended to be easily and quickly
         understood by human technicians, but also by an AI when trying to use a list of
@@ -28,12 +32,7 @@ resources:
         A title like 'Problem with [something]' is not allowed. Only generate a title as soon
         as you have enough information for a concise title.
 
-    - field: "TicketCategory"
-      description: |
-        A category or topic for the issue to be easily and automatically
-        categorised in the ticket system and for easy assignment to technicians.
-
-    - field: "TicketTags"
+    "TicketTags":
       description: |
         A comma-separated list of tags, relating to the issue. The purpose is to know
         which technologies are involved, to quickly determine which technician might be qualified,
@@ -42,25 +41,21 @@ resources:
         Some very basic tags about the kind of problem are also welcome.
         There can be more than one but only the ones that apply. E.g.:
         "Crash", "Error Message", "Performance Issues", "Connection Issues", "Feature Malfunction",
-        "Authorization/Access issues", "Breaking Update (for issues arising after an update)
+        "Authorization/Access issues", "Breaking Update" (for issues arising after an update)
 
-    - field: "CustomerName"
-      description: |
-        The name of the customer. Make sure it's not a joke or an online username.
-
-    - field: "IssueExpectation"
+    "IssueExpectation":
       description: |
         A detailed but concise description of what the user expected instead of
         the issue they are experiencing. Do not generate a value for this field if the problem
         has not been sufficiently described.
 
-    - field: "IssueExperience"
+    "IssueExperience":
       description: |
         A detailed but concise description of what the user is experiencing
         instead of what they were expecting. If possible, try to trace back what the user did
         before, for the technicians to be able to recreate the issue.
 
-    - field: "Urgent"
+    "Urgent":
       description: |
         'true' or 'false'. Put 'true' if the issue is hindering the customer's work
         significantly and needs help ASAP. (Obviously, don't include the single quotes in the value.)
@@ -69,17 +64,17 @@ resources:
 
 prompts:
 
-  - command: "/DetectInfo"
+  "/detectInfo":
     prompt: |
       Process the most recent user message provided to you. Determine if it contains any concise information
-      relevant to the ticket fields.
+      relevant to the ticket fields. Use `context:current_chat_history` for context.
       If you don't have concise information on a field, don't include it in the JSON array.
-      Only put fields that are described in the previously provided `issue_checklist` and pay attention to the
+      Only put fields that are described in the previously provided `resource:issue_checklist` and pay attention to the
       descriptions in the checklist.
-      You have been provided with the current issue object filled out by previous instances of this prompt.
-      If you detect a piece of info on a field that is already non-null in the object, determine if the new one provides
-      more useful information and, if appropriate, merge them. If the convo has made clear that info has changed,
-      just overwrite it.
+      You have been provided with the current issue object (`context:current_issue`) filled out by previous instances of this prompt.
+      If you detect a piece of info on a field that is already non-null and non-empty in the object,
+      determine if the new one provides more useful information and, if appropriate, merge them.
+      If the conversation has made clear that info has changed, just overwrite it.
     output_format: |
       Do not generate a chat answer, even if the user is asking something.
       Generate a JSON string to be deserialized into a List of the following Kotlin class.
@@ -122,7 +117,7 @@ prompts:
           [
             {
               "field": "TicketTitle",
-              "value": "OneNote Executable Not Found Error"
+              "value": "OneNote fails to launch with error: 'Executable Not Found'"
             },
             {
               "field": "TicketTags",
@@ -138,14 +133,22 @@ prompts:
             }
           ]
 
-  - command: "/GatherInfo"
+  "/gatherInfo":
     prompt: |
       Continue the conversation with the user to gather any additional information relevant to their issue. 
-      Refer to the "issue_checklist" resource and ask clarifying questions to ensure that all necessary information is collected. 
-      Be supportive and aim to keep the user engaged, encouraging them to provide details about the problem.
+      Refer to `resource:issue_checklist` and ask clarifying questions to ensure that all necessary information is
+      collected. Be supportive and aim to keep the user engaged, encouraging them to provide details about the problem.
       Do not ask multiple things at the same time. Try to guide the conversation to the most relevant info.
       if the user is asking a question that is related to the issue/topic, try to answer to the best of your knowledge.
       Obviously, don't ask questions about things that have already been defined concisely.
+      Refer to `context:current_issue` to see the current values. If a field is empty, null or contains
+      insufficient information, try to get the info for it.
+      
+      If a field has just been added (refer to `context:current_chat_history`), go on to the next field.
+      
+      You have already asked the customer for their name. If `context:issue:CustomerName` is still empty,
+      it either means the customer has not answered your question properly or you misunderstood. In this case,
+      ask again respectfully.
     output_examples:
       - user_message: |
           I'm really confused about the error I'm seeing.
@@ -160,3 +163,19 @@ prompts:
           It just won't start.
         assistant_output: |
           I’m here to help! Can you provide the name of the application and if there were any changes made before it stopped working?
+
+  "/greetCustomer":
+    prompt: |
+      This is the start of the conversation. Greet the customer using the name in `context:issue:CustomerName`
+      if it is not empty. If it is empty, introduce yourself, welcome them as a new customer and ask them for their name.
+  "/assignEmployee":
+    prompt: |
+#      TODO Implement /assignEmployee. Return: ID of employee
+  "/generatePotentialSolutions":
+    prompt: |
+#      TODO Implement /generatePotentialSolutions
+  "/extractBooleanNullable":
+    prompt: |
+      Interpret the most recent user message and convert it to a nullable boolean, answering the question that came before.
+      true: positive response. false: negative response. null: If it isn't entirely clear or there is no answer.
+      Return single, lower-case, serializable words.
