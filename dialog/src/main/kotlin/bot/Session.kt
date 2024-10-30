@@ -5,7 +5,8 @@ import bot.Issue.Keys.*
 import data.Repos
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import models_dialog.Ticket
+import models.Ticket
+import java.io.File
 
 @Serializable
 abstract class Message(
@@ -13,6 +14,10 @@ abstract class Message(
 )
 
 data class UserMessage(
+    override val content: String,
+) : Message(content)
+
+data class SystemMessage(
     override val content: String,
 ) : Message(content)
 
@@ -69,6 +74,19 @@ data class Context(
     var issue: Issue,
 )
 
+/**
+ * Reads the bot configuration from a YAML file located in the resources directory.
+ *
+ * @return The content of the bot configuration file as a UTF-8 string.
+ * @throws
+ */
+fun readBotConfigYaml(): String {
+    val classLoader = Thread.currentThread().contextClassLoader
+    val resource = classLoader.getResource("bot_config.yaml")
+        ?: throw IllegalArgumentException("File not found: bot_config.yaml")
+    return File(resource.file).readText(Charsets.UTF_8)
+}
+
 class Session(
     sessionId: String,
     userId: String,
@@ -85,7 +103,11 @@ class Session(
     private val context: Context
         get() = Context(history, issue)
 
-    // TODO: give the yaml to the ai as the first system message
+    init {
+        // Initialize conversation by sending the bot config as a system message
+        val botConfigYaml = readBotConfigYaml()
+        history.add(SystemMessage(botConfigYaml))
+    }
 
     suspend fun processMessage(): AssistantMessage? = try {
         when (history.lastAssistantMessage()?.intent) {
@@ -123,13 +145,13 @@ class Session(
             Intent.Solution -> {
                 val solutionResult = Prompts.ExtractBooleanNullable(context).execute()
                 if (solutionResult == true) {
-                    //TODO: Replace solved issue message with prompt
+                    // TODO: Replace solved issue message with prompt
                     AssistantMessage(
                         "Issue resolved successfully! 🙌 Chat will now end. Thank you for using the ticket system.👋",
                         Intent.EndAndSolved
                     )
                 } else {
-                    //TODO: Replace sent ticket message with prompt
+                    // TODO: Replace sent ticket message with prompt
                     AssistantMessage(
                         content = "Issue could not be resolved, ticket is being sent.",
                         body = issue.toTicket(context),

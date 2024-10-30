@@ -1,7 +1,7 @@
 package bot
 
 import kotlinx.serialization.Serializable
-import models_dialog.Employee
+import models.Employee
 
 object Prompts {
 

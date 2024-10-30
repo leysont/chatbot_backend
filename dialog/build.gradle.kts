@@ -59,7 +59,7 @@ dependencies {
 
     // Project-specific
     implementation("com.aallam.openai:openai-client:3.8.2")
-    // implementation(project(":storage"))
+    implementation(project(":storage"))
 
     testImplementation(kotlin("test"))
 }

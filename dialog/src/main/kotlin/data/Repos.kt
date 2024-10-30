@@ -1,18 +1,15 @@
 package data
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.isSuccess
-import models_dialog.Customer
-import models_dialog.Employee
-import models_dialog.Server
-import models_dialog.Ticket
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import models.Customer
+import models.Employee
+import models.Server
+import models.Ticket
 
 /**
  * Singleton object that hosts various repository objects for managing

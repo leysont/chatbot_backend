@@ -5,8 +5,8 @@ import bot.Prompts.AssignEmployee
 import data.Repos
 import data.Repos.Employees
 import kotlinx.serialization.Serializable
-import models_dialog.Customer
-import models_dialog.Ticket
+import models.Customer
+import models.Ticket
 
 @Serializable
 class Issue {
