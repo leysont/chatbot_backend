@@ -4,18 +4,22 @@ import kotlinx.serialization.Serializable
 import models.Employee
 
 object Prompts {
+    lateinit var model: AiModel
 
-    private val model: AiModel = Gpt4oMini()
-
-    interface IPrompt {
-        fun execute(): Any?
+    fun setApiToken(token: String) {
+        model = Gpt4oMini(token)
     }
 
     @Serializable
-    abstract class DefaultCommandPrompt(
-    ) : IPrompt {
+    sealed interface IPrompt {
+        suspend fun execute(): Any?
+    }
+
+    @Serializable
+    sealed class DefaultCommandPrompt : IPrompt {
         abstract val promptCommand: String
         abstract val context: Context
+        // abstract val key: String
     }
 
     @Serializable
@@ -23,7 +27,7 @@ object Prompts {
         override val context: Context,
         override val promptCommand: String = "/extractInfo",
     ) : DefaultCommandPrompt() {
-        override fun execute(): Info = model.generateTo(this)
+        override suspend fun execute(): Info = model.generateTo(this, context)
     }
 
     @Serializable
@@ -31,7 +35,7 @@ object Prompts {
         override val context: Context,
         override val promptCommand: String = "/gatherInfo",
     ) : DefaultCommandPrompt() {
-        override fun execute(): String = model.generateTo(this)
+        override suspend fun execute(): String = model.generateTo(this, context)
     }
 
     @Serializable
@@ -39,7 +43,7 @@ object Prompts {
         override val context: Context,
         override val promptCommand: String = "/requestTicketConfirmation",
     ) : DefaultCommandPrompt() {
-        override fun execute(): String = model.generateTo(this)
+        override suspend fun execute(): String = model.generateTo(this, context)
     }
 
     @Serializable
@@ -47,7 +51,7 @@ object Prompts {
         override val context: Context,
         override val promptCommand: String = "/GeneratePotentialSolutions",
     ) : DefaultCommandPrompt() {
-        override fun execute(): String = model.generateTo(this)
+        override suspend fun execute(): String = model.generateTo(this, context)
     }
 
     @Serializable
@@ -55,7 +59,7 @@ object Prompts {
         override val context: Context,
         override val promptCommand: String = "/extractBoolean",
     ) : DefaultCommandPrompt() {
-        override fun execute(): Boolean? = model.generateTo(this)
+        override suspend fun execute(): Boolean? = model.generateTo(this, context)
     }
 
     @Serializable
@@ -65,12 +69,20 @@ object Prompts {
         val tags: List<String>,
         val employees: List<Employee>,
     ) : DefaultCommandPrompt() {
-        override fun execute(): Employee {
-            val employeeId = model.generateTo<Int>(this)
+        override suspend fun execute(): Employee {
+            val employeeId = model.generateTo<Int>(this, context)
 
             return employees.find {
                 it.id == employeeId
             } ?: throw AiInvalidOutputException("Expected valid employee ID, got $employeeId.")
         }
+    }
+
+    @Serializable
+    data class GreetCustomer(
+        override val context: Context,
+        override val promptCommand: String = "/greetCustomer",
+    ) : DefaultCommandPrompt() {
+        override suspend fun execute(): String = model.generateTo(this, context)
     }
 }

@@ -9,23 +9,28 @@ import models.Ticket
 import java.io.File
 
 @Serializable
-abstract class Message(
-    open val content: String,
-)
+sealed interface Message {
+    val content: String
+}
 
+@Serializable
 data class UserMessage(
     override val content: String,
-) : Message(content)
+) : Message
 
-data class SystemMessage(
+@Serializable
+class SystemMessage(
+    // content: String,
     override val content: String,
-) : Message(content)
+) : Message
 
-data class AssistantMessage(
+@Serializable
+class AssistantMessage(
+     // content: String,
     override val content: String,
     val intent: Intent,
     val body: Ticket? = null,
-) : Message(content) {
+) : Message {
     enum class Intent {
         Summary, Solution, GatherInfo, EndAndSolved, EndAndSendTicket,
     }
@@ -37,14 +42,14 @@ class History {
      * Maintains a history of interactions within a user session.
      * The key consists of the role, the value is the message.
      */
-    private val history = mutableListOf<Message>()
+    val historyList = mutableListOf<Message>()
 
     fun add(message: Message) {
-        history.add(message)
+        historyList.add(message)
     }
 
     fun lastAssistantMessage(): AssistantMessage? {
-        return history.lastOrNull { message -> message is AssistantMessage } as AssistantMessage?
+        return historyList.lastOrNull { message -> message is AssistantMessage } as AssistantMessage?
     }
 }
 
@@ -53,7 +58,8 @@ object SessionManager {
     // TODO: Replace session map with Repos.Tickets.get(id) and filter open. New error if it's closed.
     private val sessions = mutableMapOf<String, Session>()
 
-    fun get(id: String): Session? {
+    suspend fun get(id: String): Session? {
+        val ticket = Repos.Tickets.get(id.toInt())
         return sessions[id]
     }
 
@@ -84,7 +90,12 @@ fun readBotConfigYaml(): String {
     val classLoader = Thread.currentThread().contextClassLoader
     val resource = classLoader.getResource("bot_config.yaml")
         ?: throw IllegalArgumentException("File not found: bot_config.yaml")
-    return File(resource.file).readText(Charsets.UTF_8)
+
+    val workingDir = System.getProperty("user.dir")
+    println("Current working directory: $workingDir")
+    return File(
+        "C:\\Users\\marte\\OneDrive - Berufskolleg Lübbecke\\Projects\\TeamTrashcan\\adira_core\\dialog\\src\\main\\resources\\bot_config.yaml"
+    ).readText(Charsets.UTF_8)
 }
 
 class Session(

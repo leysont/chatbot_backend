@@ -26,6 +26,7 @@ data class Ticket(
     val employee: Employee,
     val express: Boolean = false,
     val tags: List<String> = listOf(),
+    val status: String = "open", // TODO add status
 ) {
     val serviceLevel: ServiceLevel = customer.serviceLevel
 }

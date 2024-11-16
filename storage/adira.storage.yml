@@ -15,7 +15,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - volume:/var/lib/mysql
+      - adira_data:/var/lib/mysql
 
   storage:
     image: adira_core.storage
@@ -27,4 +27,4 @@ services:
 #    restart: always
 
 volumes:
-    volume:
+  adira_data:
