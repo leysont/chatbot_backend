@@ -35,9 +35,8 @@ object EmployeeTable : IntIdTable() {
 object TicketTable : IntIdTable() {
     val title = varchar("name", 100)
     val customerId = reference("customer_id", CustomerTable)
-    val issueDescription = text("text")
-    val issueExperience = text("text")
-    val issueExpectation = text("text")
+    val issueExperience = text("issue_experience")
+    val issueExpectation = text("issue_expectation")
     val employeeId = reference("employee_id", EmployeeTable)
     val express = bool("express").default(false)
     val serviceLevel = enumerationByName("service_level", 10, ServiceLevel::class)
@@ -83,7 +82,6 @@ class TicketDAO(id: EntityID<Int>) : IntEntity(id) {
 
     var title by TicketTable.title
     var customer by CustomerDAO referencedOn TicketTable.customerId
-    var issueDescription by TicketTable.issueDescription
     var issueExperience by TicketTable.issueExperience
     var issueExpectation by TicketTable.issueExpectation
     var employee by EmployeeDAO referencedOn TicketTable.employeeId

@@ -159,15 +159,14 @@ fun Routing.configureApiEndpoints() {
             val list = Repos.Servers.getAll()
             call.respond(list)
         }
-        get("/role") {
-            val role = call.parameters["supporterRoleID"]?.toIntOrNull()
-            if (role == null) {
+        get("/{serverId}") {
+            val serverId = call.parameters["serverId"]?.toIntOrNull()
+            if (serverId == null) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@get
             }
 
-            // Repos.Tickets[id] is the same as Repos.Tickets.get(id)
-            val entity = Repos.Tickets[role]
+            val entity = Repos.Servers.get(serverId)?.supporterRoleID
 
             call.respond(entity ?: HttpStatusCode.NotFound)
         }
