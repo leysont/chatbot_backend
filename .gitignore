@@ -34,3 +34,14 @@ out/
 
 ### VS Code ###
 .vscode/
+/.kotlin/errors/errors-1729579226131.log
+/.kotlin/errors/errors-1729579400113.log
+/.kotlin/errors/errors-1729580146629.log
+/.kotlin/errors/errors-1729580364188.log
+/.kotlin/errors/errors-1729580681822.log
+/.kotlin/errors/errors-1729581816444.log
+/.kotlin/errors/errors-1729581890361.log
+/.kotlin/errors/errors-1729582020218.log
+/dialog/docs/.swagger-codegen/VERSION
+/dialog/docs/.swagger-codegen-ignore
+/dialog/docs/index.html
