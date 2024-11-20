@@ -9,6 +9,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
+import models.Server
 import models.Ticket
 
 
@@ -107,19 +108,30 @@ fun Routing.configureEndpoints() {
             call.respond(response)
         }
     }
+    route("/supporter_role"){
+        /**
+         * Gets the supporter role ID for a server by its ID
+         * params: server ID
+         * responses:
+         *  - `200 Ok`: Success
+         *  - `404 NotFound`: If ID is not found
+         *  - `400 BadRequest`: If param is wrong format / missing
+         */
+        get() {
+            val serverId =
+                call.parameters["serverId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "serverId is missing")
+            val (status, message) = getSupporterRole(serverId)
+            call.respond(status, message ?: "")
+        }
 
-    /**
-     * Gets the supporter role ID for a server by its ID
-     * params: server ID
-     * responses:
-     *  - `200 Ok`: Success
-     *  - `404 NotFound`: If ID is not found
-     *  - `400 BadRequest`: If param is wrong format / missing
-     */
-    get("/supporter_role") {
-        val serverId = call.parameters["serverId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "serverId is missing")
-        val (status, message) = getSupporterRole(serverId)
-        call.respond(status, message ?: "")
+        post() {
+            @Serializable
+            data class RequestSupporterRoleIdPost(val serverId: String, val roleId: String)
+
+            val (serverId, roleId) = call.receive<RequestSupporterRoleIdPost>()
+            val (status, message) = setSupporterRole(serverId, roleId)
+            call.respond(status, message ?: "")
+        }
     }
 }
 
@@ -209,6 +221,26 @@ private suspend fun postMessage(
 }
 
 data class HttpSimpleResponse(val status: HttpStatusCode, val message: Any? = null)
+
+suspend fun setSupporterRole(serverId: String?, roleId: String?): HttpSimpleResponse {
+    val serverIdInt = serverId?.toIntOrNull()
+        ?: return HttpSimpleResponse(
+            HttpStatusCode.BadRequest,
+            "serverId has to be an integer"
+        )
+    val roleIdInt = roleId?.toIntOrNull()
+        ?: return HttpSimpleResponse(
+            HttpStatusCode.BadRequest,
+            "roleId has to be an integer"
+        )
+
+    Repos.Servers.delete(serverIdInt)
+
+    return HttpSimpleResponse(
+        HttpStatusCode.Created,
+        Repos.Servers.add(Server(serverIdInt, roleIdInt)),
+    )
+}
 
 suspend fun getSupporterRole(serverId: String?): HttpSimpleResponse {
     val serverIdInt = serverId?.toIntOrNull()
