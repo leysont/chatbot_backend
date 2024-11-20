@@ -11,24 +11,6 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import models.Ticket
 
-@Serializable
-data class RequestMessage(
-    val sessionId: String,
-    val message: String,
-    val isSystemMessage: Boolean? = false,
-)
-
-@Serializable
-data class RequestStart(
-    val userId: String,
-    val sessionId: String,
-)
-
-@Serializable
-data class RequestEnd(
-    val sessionId: String,
-)
-
 
 /**
  * Configures the endpoints for managing chat sessions.
@@ -61,6 +43,9 @@ fun Routing.configureEndpoints() {
      *  - `500 InternalServerError`: If no response could be generated
      */
     post("/message") {
+        @Serializable
+        data class RequestMessage(val sessionId: String, val message: String, val isSystemMessage: Boolean? = false)
+
         val (sessionId, message, isSystem) = try {
             call.receive<RequestMessage>()
         } catch (ex: ContentTransformationException) {
@@ -68,44 +53,59 @@ fun Routing.configureEndpoints() {
             return@post
         }
 
-        postMessage(sessionId, message, isSystem)
+        val response = postMessage(sessionId, message, isSystem)
+        call.respond(response.status, response.message ?: "")
     }
 
-    /**
-     * Start a new chat session.
-     * params: userId, channelId (becomes issue ID)
-     * responses:
-     *  - `201 Created`: Success
-     *  - `404 NotFound`: If any ID is not found
-     *  - `400 BadRequest`: If any ID is wrong format / missing
-     */
-    post("/start") {
-        val (userId, sessionId) = try {
-            call.receive<RequestStart>()
-        } catch (e: ContentTransformationException) {
-            call.respond(HttpStatusCode.BadRequest, e.message ?: "")
-            return@post
+    route("/sessions"){
+        /**
+         * Start a new chat session.
+         * params: userId, channelId (becomes issue ID)
+         * responses:
+         *  - `201 Created`: Success
+         *  - `404 NotFound`: If any ID is not found
+         *  - `400 BadRequest`: If any ID is wrong format / missing
+         */
+        post {
+            @Serializable
+            data class RequestSessionsPost(val userId: String, val sessionId: String)
+
+            val (userId, sessionId) = try {
+                call.receive<RequestSessionsPost>()
+            } catch (e: ContentTransformationException) {
+                call.respond(HttpStatusCode.BadRequest, e.message ?: "")
+                return@post
+            }
+
+            SessionManager.create(userId, sessionId)
+
+            call.respond(HttpStatusCode.Created)
         }
 
-        SessionManager.create(userId, sessionId)
+        /**
+         * Ends a chat session.
+         * params: channel ID
+         * responses:
+         *  - `204 NoContent`: Success
+         *  - `404 NotFound`: If ID is not found
+         *  - `400 BadRequest`: If param is wrong format / missing
+         */
+        delete {
+            @Serializable
+            data class RequestSessionsDelete(val sessionId: String)
 
-        call.respond(HttpStatusCode.Created)
-    }
+            val (sessionId) = call.receive<RequestSessionsDelete>()
 
-    /**
-     * Ends a chat session.
-     * params: channel ID
-     * responses:
-     *  - `204 NoContent`: Success
-     *  - `404 NotFound`: If ID is not found
-     *  - `400 BadRequest`: If param is wrong format / missing
-     */
-    post("/cancel") {
-        val (sessionId) = call.receive<RequestEnd>()
+            SessionManager.end(sessionId)
 
-        SessionManager.end(sessionId)
+            call.respond(HttpStatusCode.NoContent)
+        }
 
-        call.respond(HttpStatusCode.NoContent)
+        get {
+            val response = SessionManager.getAll().map { Pair(it.key, it.value.userId) }.toMap()
+
+            call.respond(response)
+        }
     }
 
     /**
@@ -117,7 +117,8 @@ fun Routing.configureEndpoints() {
      *  - `400 BadRequest`: If param is wrong format / missing
      */
     get("/supporter_role") {
-        val (status, message) = getSupporterRole(call.parameters["serverId"])
+        val serverId = call.parameters["serverId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "serverId is missing")
+        val (status, message) = getSupporterRole(serverId)
         call.respond(status, message ?: "")
     }
 }
@@ -135,7 +136,7 @@ fun Routing.configureEndpoints() {
  * - `400 BadRequest`: If the sessionId or message is blank.
  * - `404 NotFound`: If the session is not found.
  * - `500 InternalServerError`: If no response could be generated.
-*/
+ */
 private suspend fun postMessage(
     sessionId: String,
     message: String,

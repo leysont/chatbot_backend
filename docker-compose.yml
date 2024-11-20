@@ -1,0 +1,40 @@
+version: '3.8'
+
+name: adira_core
+
+services:
+  storage.database:
+    image: mariadb
+    container_name: storage.database
+    #    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: support_data
+      MARIADB_USER: adira
+      MARIADB_PASSWORD: adiras_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - adira_data:/var/lib/mysql
+
+  storage:
+    image: adira_core.storage
+    container_name: storage
+    #    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - storage.database
+
+  dialog:
+    image: adira_core.dialog
+    container_name: dialog
+    #    restart: always
+    environment:
+      BOT_CONFIG_PATH: ${BOT_CONFIG_PATH}
+    ports:
+      - "8080:8080"
+    env_file: "var_secret.env"
+
+volumes:
+  adira_data:

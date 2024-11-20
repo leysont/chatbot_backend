@@ -19,7 +19,7 @@ object Repos {
 
     val client = HttpClient(CIO) {
         defaultRequest {
-            url("https://storage/")
+            url("http://storage:8081/")
         }
     }
 
@@ -42,7 +42,7 @@ object Repos {
      * Repository for managing Customers.
      */
     object Customers : Repository<Customer> {
-        const val PATH = "customers"
+        private const val PATH = "customers"
         override suspend fun getAll(): List<Customer>? =
             client.getOrNull(PATH)
 
@@ -60,7 +60,7 @@ object Repos {
      * Repository for managing Customers.
      */
     object Tickets : Repository<Ticket> {
-        const val PATH = "tickets"
+        private const val PATH = "tickets"
         override suspend fun getAll(): List<Ticket>? =
             client.getOrNull(PATH)
 
@@ -79,7 +79,7 @@ object Repos {
      * Repository for managing Customers.
      */
     object Employees : Repository<Employee> {
-        const val PATH = "employees"
+        private const val PATH = "employees"
         override suspend fun getAll(): List<Employee>? =
             client.getOrNull(PATH)
 
@@ -97,7 +97,7 @@ object Repos {
      * Repository for managing Servers.
      */
     object Servers : Repository<Server> {
-        const val PATH = "servers"
+        private const val PATH = "servers"
         override suspend fun getAll(): List<Server>? =
             client.getOrNull(PATH)
 

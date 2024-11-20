@@ -26,7 +26,7 @@ class SystemMessage(
 
 @Serializable
 class AssistantMessage(
-     // content: String,
+    // content: String,
     override val content: String,
     val intent: Intent,
     val body: Ticket? = null,
@@ -63,12 +63,16 @@ object SessionManager {
         return sessions[id]
     }
 
+    fun getAll(): Map<String, Session> {
+        return sessions
+    }
+
     fun end(id: String) {
         sessions.remove(id)
     }
 
     fun create(userId: String, sessionId: String): Session {
-        return Session(userId, sessionId).also {
+        return Session(sessionId, userId).also {
             sessions[sessionId] = it
         }
     }
@@ -93,19 +97,19 @@ fun readBotConfigYaml(): String {
 
     val workingDir = System.getProperty("user.dir")
     println("Current working directory: $workingDir")
-    return File(
-        "C:\\Users\\marte\\OneDrive - Berufskolleg Lübbecke\\Projects\\TeamTrashcan\\adira_core\\dialog\\src\\main\\resources\\bot_config.yaml"
-    ).readText(Charsets.UTF_8)
+    return File(Env.botConfigPath)
+        .readText(Charsets.UTF_8)
 }
 
 class Session(
-    sessionId: String,
-    userId: String,
+    val sessionId: String,
+    val userId: String,
 ) {
 
     private val issue = Issue().apply {
         this[TicketId.name] = sessionId
         this[CustomerId.name] = userId
+        println("Session init. userId: $userId, sessionId: $sessionId")
         this[CustomerName.name] = runBlocking { userId.toIntOrNull()?.let { Repos.Customers.get(it) } }?.name
     }
 
@@ -120,7 +124,8 @@ class Session(
         history.add(SystemMessage(botConfigYaml))
     }
 
-    suspend fun processMessage(): AssistantMessage? = try {
+    suspend fun
+            processMessage(): AssistantMessage? = try {
         when (history.lastAssistantMessage()?.intent) {
 
             // Last message was a summary, check response; if successful send solution, else gather info

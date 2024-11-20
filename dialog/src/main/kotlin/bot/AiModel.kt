@@ -13,14 +13,14 @@ import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 
 interface AiModel {
-    suspend fun generate(prompt: String, context: Context): String?
-    suspend fun generate(prompt: IPrompt, context: Context): String? = generate(
-        Json.Default.encodeToString(prompt), context
+    suspend fun generate(promptText: String, context: Context): String?
+    suspend fun generate(prompt: IPrompt): String? = generate(
+        Json.Default.encodeToString(prompt), prompt.context
     )
 }
 
-suspend inline fun <reified T> AiModel.generateTo(prompt: IPrompt, context: Context): T {
-    val answer = generate(prompt, context) ?: throw AiNoAnswerException()
+suspend inline fun <reified T> AiModel.generateTo(prompt: IPrompt): T {
+    val answer = generate(prompt) ?: throw AiNoAnswerException()
     return try {
         when (T::class) {
             String::class -> answer as T
@@ -41,10 +41,10 @@ class Gpt4oMini(apiToken: String) : AiModel {
     private val model = ModelId("gpt-4o-mini")
 
     override suspend fun generate(
-        prompt: String,
+        promptText: String,
         context: Context,
     ): String {
-        return generateChatChoice(context, prompt).message.content!!
+        return generateChatChoice(context, promptText).message.content!!
     }
 
     private suspend fun generateChatChoice(context: Context, prompt: String): ChatChoice {
